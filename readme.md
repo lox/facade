@@ -1,4 +1,4 @@
-Facade
+Façade
 ======
 
 Facade is an [open-source][1] library for abstracting access to a variety of file storage mechanisms
