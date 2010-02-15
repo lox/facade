@@ -8,6 +8,7 @@ caching.
 The backends supported will initially be:
 
 * [Amazon S3][3]
+* HTTP
 * Filesystem
 
 Other backends which will follow:
