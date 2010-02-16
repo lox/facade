@@ -3,27 +3,28 @@
 /**
  * An HTTP 1.0 request
  */
-class Facade_Http_Request extends Facade_AbstractRequest
+class Facade_Http_Request implements Facade_Request
 {
 	const METHOD_PUT='PUT';
 	const METHOD_GET='GET';
 	const METHOD_POST='POST';
 	const METHOD_HEAD='HEAD';
 
+	private $_headers;
 	private $_socket;
 	private $_method;
 	private $_path;
+	private $_stream;
 
 	/**
 	 * Constructor
 	 */
 	public function __construct($socket, $method, $path)
 	{
-		parent::__construct();
+		$this->_headers = new Facade_HeaderCollection();
 		$this->_socket = $socket;
 		$this->_method = $method;
 		$this->_path = $path;
-		$this->_headers = array();
 	}
 
 	/**
@@ -40,6 +41,32 @@ class Facade_Http_Request extends Facade_AbstractRequest
 	public function setDate($timestamp)
 	{
 		return $this->setHeader('Date: '. gmdate('D, d M Y H:i:s T', $timestamp));
+	}
+
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function setStream($stream)
+	{
+		$this->_stream = $stream;
+		return $this;
+	}
+
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function setHeader($header)
+	{
+		$this->_headers->add($header);
+		return $this;
+	}
+
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function getHeaders()
+	{
+		return $this->_headers;
 	}
 
 	/* (non-phpdoc)

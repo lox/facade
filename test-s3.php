@@ -33,7 +33,7 @@ $s3 = new Facade_S3(
 
 $response = $s3
 	->put(sprintf("/%s/%s",$bucket,$objectName))
-	->setContentFile($file)
+	->setStream(Facade_Stream::fromFile($file))
 	->setContentType('image/jpeg')
 	->setHeader('Content-MD5: '.base64_encode(md5_file($file, true)))
 	->send();
@@ -42,7 +42,7 @@ $response = $s3
 	->get(sprintf("/%s/%s",$bucket,$objectName))
 	->send();
 
-if(strlen($response->getContentString()) != filesize($file))
+if(strlen($response->getStream()->toString()) != filesize($file))
 {
 	die("response size doesn't match sent size");
 }

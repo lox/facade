@@ -6,32 +6,15 @@
 interface Facade_Request
 {
 	/**
-	 * Set the input to use a file
+	* Sets the content to send as an {@link Facade_Stream}
 	 * @chainable
 	 */
-	public function setContentFile($file);
-
-	/**
-	 * Sets the content to send as a php stream, with an optional length
-	 * @chainable
-	 */
-	public function setContentStream($stream, $length=null);
-
-	/**
-	 * Sets the content to send as a string
-	 * @chainable
-	 */
-	public function setContentString($string);
-
-	/**
-	 * Sets the length of the content
-	 * @chainable
-	 */
-	public function setContentLength($bytes);
+	public function setStream($stream);
 
 	/**
 	 * Sets a header
 	 * @param either a string containing the header or a {@link Facade_Header}
+	 * @chainable
 	 */
 	public function setHeader($header);
 

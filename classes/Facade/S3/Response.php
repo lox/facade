@@ -66,35 +66,12 @@ class Facade_S3_Response implements Facade_Response
 	}
 
 	/**
-	 * Gets the content of the response as a string
+	 * Gets the content stream
 	 * @return string
 	 */
-	public function getContentString()
+	public function getStream()
 	{
-		if($this->getHeaders()->contains('Content-Length'))
-		{
-			// not sure if this is needed, but seemed sensible
-			return stream_get_contents($this->getContentStream(),
-				$this->getHeaders()->value('Content-Length'));
-		}
-		else
-		{
-			return stream_get_contents($this->getContentStream());
-		}
-	}
-
-	/**
-	 * Gets the content of the response as a stream
-	 * @return stream
-	 */
-	public function getContentStream()
-	{
-		if($this->_socket->isEof())
-		{
-			throw new Contests_Aws_S3Exception("Response has no content");
-		}
-
-		return $this->_socket->getStream();
+		return $this->_socket;
 	}
 
 	/**
@@ -108,6 +85,6 @@ class Facade_S3_Response implements Facade_Response
 			throw new Contests_Aws_S3Exception("Response is not xml");
 		}
 
-		return new SimpleXMLElement($this->getContentString());
+		return new SimpleXMLElement($this->getStream()->toString());
 	}
 }

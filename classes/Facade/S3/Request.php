@@ -3,8 +3,10 @@
 /**
  * A request sent to Amazon's S3 service
  */
-class Facade_S3_Request extends Facade_AbstractRequest
+class Facade_S3_Request implements Facade_Request
 {
+	private $_headers;
+	private $_stream;
 	private $_accesskey;
 	private $_method;
 	private $_secret;
@@ -16,7 +18,7 @@ class Facade_S3_Request extends Facade_AbstractRequest
 	 */
 	public function __construct($socket, $accesskey, $secret, $method, $path)
 	{
-		parent::__construct();
+		$this->_headers = new Facade_HeaderCollection();
 		$this->_accesskey = $accesskey;
 		$this->_secret = $secret;
 		$this->_socket = $socket;
@@ -48,6 +50,32 @@ class Facade_S3_Request extends Facade_AbstractRequest
 		return $this->setHeader('Date: '. gmdate('D, d M Y H:i:s T', $timestamp));
 	}
 
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function setStream($stream)
+	{
+		$this->_stream = $stream;
+		return $this;
+	}
+
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function setHeader($header)
+	{
+		$this->_headers->add($header);
+		return $this;
+	}
+
+	/* (non-phpdoc)
+	 * @see Facade_Request::setStream()
+	 */
+	public function getHeaders()
+	{
+		return $this->_headers;
+	}
+
 	/**
 	 * Sends the request
 	 */
@@ -57,8 +85,14 @@ class Facade_S3_Request extends Facade_AbstractRequest
 
 		// set some defaults
 		if(!$headers->contains('Date')) $this->setDate(time());
-		if(!$headers->contains('Host')) $this->setHeader('Host: ' .$this->_socket->getHost());
+		if(!$headers->contains('Host')) $this->setHeader('Host: '.Facade_S3::S3_HOST);
 		if(!$headers->contains('x-amz-acl')) $this->setHeader('x-amz-acl: private');
+
+		// if there is a stream, add a content length
+		if(isset($this->_stream))
+		{
+			$this->setHeader('Content-Length: '.$this->_stream->getLength());
+		}
 
 		// add the amazon signature
 		$headers->set(sprintf('Authorization: AWS %s:%s',
@@ -72,10 +106,9 @@ class Facade_S3_Request extends Facade_AbstractRequest
 			);
 
 		// most requests have a content stream
-		if($headers->contains('Content-Length'))
+		if($headers->contains('Content-Length') && $headers->value('Content-Length'))
 		{
-			$this->_socket->copy($this->getContentStream(),
-				$headers->value('Content-Length'));
+			$this->_socket->copy($this->_stream);
 		}
 
 		// build a response

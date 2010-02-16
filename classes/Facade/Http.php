@@ -1,25 +1,21 @@
 <?php
 
 /**
- * A simple Amazon S3 backend
+ * A simple HTTP backend
  */
-class Facade_S3 implements Facade_Backend
+class Facade_Http implements Facade_Backend
 {
-	const S3_HOST='s3.amazonaws.com';
-
-	private $_key;
-	private $_secret;
+	private $_host;
+	private $_port;
 	private $_timeout;
 
 	/**
 	 * Constructor
-	 * @param string AWS Access Key ID
-	 * @param string AWS Secret Key
 	 */
-	public function __construct($key, $secret, $timeout=30)
+	public function __construct($host, $port, $timeout=30)
 	{
-		$this->_key = $key;
-		$this->_secret = $secret;
+		$this->_host = $host;
+		$this->_port = $port;
 		$this->_timeout = $timeout;
 	}
 
@@ -66,14 +62,13 @@ class Facade_S3 implements Facade_Backend
 		throw new BadMethodCallException(__METHOD__ . ' not implemented');
 	}
 
-
 	/**
 	 * Builds an S3 request
 	 */
 	private function buildRequest($method, $path)
 	{
-		return new Facade_S3_Request(
-			new Facade_Http_Socket(self::S3_HOST, 80, $this->_timeout),
+		return new Facade_Http_Request(
+			new Facade_Http_Socket($this->_host, $this->_port, $this->_timeout),
 			$this->_key,
 			$this->_secret,
 			$method,
@@ -81,5 +76,3 @@ class Facade_S3 implements Facade_Backend
 			);
 	}
 }
-
-
