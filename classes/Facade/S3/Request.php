@@ -115,7 +115,7 @@ class Facade_S3_Request implements Facade_Request
 		$this->_socket->setWritable(false);
 
 		// build a response
-		return new Facade_S3_Response($this->_socket);
+		return new Facade_S3_Response($this->_socket, $this->_path);
 	}
 
 	// ---------------------------------------------------------

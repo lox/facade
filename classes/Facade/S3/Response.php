@@ -12,7 +12,7 @@ class Facade_S3_Response implements Facade_Response
 	/**
 	 * Constructor
 	 */
-	public function __construct($socket)
+	public function __construct($socket, $path)
 	{
 		$this->_socket = $socket;
 		$this->_status = $this->_socket->readStatus();
@@ -30,7 +30,7 @@ class Facade_S3_Response implements Facade_Response
 			$response = $this->getContentXml();
 
 			throw new Facade_Exception(
-				"S3 request failed: {$response->Message}",
+				"S3 request for $path failed: {$response->Message}",
 				$this->getStatusCode()
 				);
 		}
