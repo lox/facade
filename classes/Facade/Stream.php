@@ -17,7 +17,7 @@ class Facade_Stream
 	{
 		$this->_stream = $stream;
 		$this->_offset = ftell($stream);
-		$this->_length = $writable ? null : $length;
+		$this->_length = $length;
 		$this->_writable = $writable;
 	}
 
@@ -120,30 +120,18 @@ class Facade_Stream
 	}
 
 	/**
-	 * Calculates the length of the stream
+	 * Sets whether the stream can be written to
+	 * @chainable
 	 */
-	public function calculateLength()
+	public function setWritable($writable)
 	{
-		$metadata = stream_get_meta_data($this->_stream);
-		$position = ftell($this->_stream);
-		$length = false;
-
-		if(isset($metadata['uri']))
-		{
-			return filesize($metadata['uri']) - $position;
-		}
-		else if($metadata['seekable'])
-		{
-			fseek($this->_stream, 0, SEEK_END);
-			$length = ftell($this->_stream);
-			fseek($this->_stream, $position, SEEK_SET);
-		}
-
-		return $length;
+		$this->_writable = $writable;
+		return $this;
 	}
 
 	/**
 	 * Sets the length of the stream
+	 * @chainable
 	 */
 	public function setLength($length)
 	{
@@ -153,6 +141,7 @@ class Facade_Stream
 		}
 
 		$this->_length = $length;
+		return $this;
 	}
 
 	/**
@@ -164,6 +153,31 @@ class Facade_Stream
 			$this->_stream,
 			$this->_length ? $this->_length : -1
 			);
+	}
+
+	/**
+	 * Calculates the length of the stream
+	 */
+	public static function calculateStreamLength($stream)
+	{
+		$metadata = stream_get_meta_data($stream);
+		$position = ftell($stream);
+		$length = false;
+
+		// try the filesize, works for urls and files
+		if(isset($metadata['uri']))
+		{
+			return filesize($metadata['uri']) - $position;
+		}
+		// fall back to seeking, this is slow on large files
+		else if($metadata['seekable'])
+		{
+			fseek($stream, 0, SEEK_END);
+			$length = ftell($stream);
+			fseek($stream, $position, SEEK_SET);
+		}
+
+		return $length;
 	}
 
 	// -------------------------------------------------
@@ -178,7 +192,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen($file, $writable ? 'r+' : 'r'))
 		{
-			throw new Facade_Exception("Failed to open file: $php_errormsg");
+			throw new Facade_Exception("Failed to open file");
 		}
 
 		return new Facade_Stream($fp, filesize($file));
@@ -193,7 +207,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen('php://temp/maxmemory:'.$buffer, 'w+'))
 		{
-			throw new Facade_Exception("Failed to create temp file: $php_errormsg");
+			throw new Facade_Exception("Failed to create temp file");
 		}
 
 		// write to the buffer
@@ -201,5 +215,17 @@ class Facade_Stream
 		rewind($fp);
 
 		return new Facade_Stream($fp, strlen($string), false);
+	}
+
+	/**
+	 * Helper to construct from a read-only stream, detects the length if not provided
+	 * @param stream a stream
+	 * @param int the length of the stream, if null then autodetect is used
+	 * @param bool whether to allow writes to the stream
+	 */
+	public static function fromStream($stream, $length=null)
+	{
+		return new Facade_Stream($stream,
+			$length ? $length : self::calculateStreamLength($stream));
 	}
 }

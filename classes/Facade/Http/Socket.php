@@ -40,7 +40,7 @@ class Facade_Http_Socket extends Facade_Stream
 			$line .= $this->read(1);
 		}
 
-		if($this->_debug) printf("<<< %s%s",trim($line),(php_sapi_name()=='cli'?"\n":'<br />'));
+		$this->_debug("<<< ", $line);
 		return $line;
 	}
 
@@ -84,7 +84,7 @@ class Facade_Http_Socket extends Facade_Stream
 	 */
 	public function write($line)
 	{
-		if($this->_debug) printf(">>> %s%s",trim($line),(php_sapi_name()=='cli'?"\n":'<br />'));
+		$this->_debug(">>> ", $line);
 		return parent::write($line);
 	}
 
@@ -105,5 +105,11 @@ class Facade_Http_Socket extends Facade_Stream
 
 		$this->write("\r\n");
 		return $this;
+	}
+
+	private function _debug($prefix, $line)
+	{
+		if($this->_debug)
+			file_put_contents('/tmp/socket.log',sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
 	}
 }

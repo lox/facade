@@ -64,7 +64,7 @@ class Facade_S3_Request implements Facade_Request
 	 */
 	public function setHeader($header)
 	{
-		$this->_headers->add($header);
+		$this->_headers->set($header);
 		return $this;
 	}
 
@@ -89,7 +89,7 @@ class Facade_S3_Request implements Facade_Request
 		if(!$headers->contains('x-amz-acl')) $this->setHeader('x-amz-acl: private');
 
 		// if there is a stream, add a content length
-		if(isset($this->_stream))
+		if(isset($this->_stream) && $this->_stream->getLength())
 		{
 			$this->setHeader('Content-Length: '.$this->_stream->getLength());
 		}
@@ -110,6 +110,9 @@ class Facade_S3_Request implements Facade_Request
 		{
 			$this->_socket->copy($this->_stream);
 		}
+
+		// we are done writing
+		$this->_socket->setWritable(false);
 
 		// build a response
 		return new Facade_S3_Response($this->_socket);
