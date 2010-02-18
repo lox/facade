@@ -100,7 +100,7 @@ class Facade_Stream
 	 * @param mixed either a php stream or another Facade_Stream
 	 * @return the number of bytes copied
 	 */
-	public function copy($stream, $bytes=null)
+	public function copy($stream)
 	{
 		if(!$this->_writable)
 		{
@@ -109,14 +109,16 @@ class Facade_Stream
 
 		if($stream instanceof Facade_Stream)
 		{
-			$maxbytes = is_null($bytes) ? $stream->getLength() : $bytes;
 			$stream = $stream->getRawStream();
 		}
 
-		return stream_copy_to_stream(
-			$stream, $this->_stream,
-			is_null($bytes) ? -1 : $bytes
-			);
+		$bytes = 0;
+		while(!feof($stream))
+		{
+			$bytes += fwrite($this->_stream, fread($stream, 1024));
+		}
+
+		return $bytes;
 	}
 
 	/**
