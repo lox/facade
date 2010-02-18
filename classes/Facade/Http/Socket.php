@@ -49,9 +49,11 @@ class Facade_Http_Socket extends Facade_Stream
 	 */
 	public function readStatus()
 	{
-		if(!preg_match('#^HTTP/1.\d (\d+) (.+?)$#',trim($this->readLine()),$m))
+		$line = trim($this->readLine());
+
+		if(!preg_match('#^HTTP/1.\d (\d+) (.+?)$#',$line,$m))
 		{
-			throw new Exception("Malformed HTTP response from S3");
+			throw new Exception("Malformed HTTP response from S3: $line");
 		}
 
 		return array($m[1], $m[2]);
@@ -70,7 +72,7 @@ class Facade_Http_Socket extends Facade_Stream
 		{
 			if(!preg_match("#^(.+?):(.+?)$#",trim($line),$m))
 			{
-				throw new Exception("Malformed HTTP header");
+				throw new Exception("Malformed HTTP header: ".trim($line));
 			}
 
 			$headers->add($line);
