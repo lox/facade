@@ -63,9 +63,9 @@ class Facade_S3 implements Facade_Backend
 	 */
 	public function delete($path)
 	{
-		throw new BadMethodCallException(__METHOD__ . ' not implemented');
+		return $this
+			->buildRequest(Facade_Http_Request::METHOD_DELETE, $path);
 	}
-
 
 	/**
 	 * Builds an S3 request
