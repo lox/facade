@@ -63,8 +63,8 @@ class Facade_Header
 	 */
 	public static function fromString($headerString)
 	{
-		$headerString = trim($headerString);
-		list($name, $value) = explode(': ', trim($headerString), 2);
-		return new self($name, $value);
+		$headerString = rtrim($headerString,"\r\n");
+		list($key, $value) = array_map('trim',explode(':', $headerString, 2));
+		return new self($key, $value);
 	}
 }

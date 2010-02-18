@@ -70,7 +70,7 @@ class Facade_Http_Socket extends Facade_Stream
 		// read until headers are over
 		while(($line = $this->readLine()) !== "\r\n")
 		{
-			if(!preg_match("#^(.+?):(.+?)$#",trim($line),$m))
+			if(!preg_match("#^(.+?):(.*)$#",$line))
 			{
 				throw new Exception("Malformed HTTP header: ".trim($line));
 			}
@@ -112,6 +112,9 @@ class Facade_Http_Socket extends Facade_Stream
 	private function _debug($prefix, $line)
 	{
 		if($this->_debug)
+		{
 			file_put_contents('/tmp/socket.log',sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
+			//printf("%s %s\n", $prefix, rtrim($line,"\r\n"));
+		}
 	}
 }
