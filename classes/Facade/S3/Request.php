@@ -108,7 +108,17 @@ class Facade_S3_Request implements Facade_Request
 		// most requests have a content stream
 		if($headers->contains('Content-Length') && $headers->value('Content-Length'))
 		{
-			$this->_socket->copy($this->_stream);
+			$bytes = $this->_socket->copy($this->_stream);
+
+			// check we wrote enough data
+			if($bytes < $headers->value('Content-Length'))
+			{
+				Spf::dump(array($bytes, $headers->value('Content-Length')));
+
+				throw new Facade_Exception(
+					"Content stream was shorter than the Content-Length"
+					);
+			}
 		}
 
 		// we are done writing
