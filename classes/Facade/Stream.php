@@ -112,13 +112,25 @@ class Facade_Stream
 			$stream = $stream->getRawStream();
 		}
 
-		$bytes = 0;
+		$bytesRead = 0;
+		$bytesWritten = 0;
+
 		while(!feof($stream))
 		{
-			$bytes += fwrite($this->_stream, fread($stream, 1024));
+			$buffer = fread($stream, 1024);
+			$bytesRead += strlen($buffer);
+			$bytesWritten += fwrite($this->_stream, $buffer);
 		}
 
-		return $bytes;
+		if($bytesRead <> $bytesWritten)
+		{
+			throw new Facade_Exception(sprintf(
+				"Stream copy failed, wrote %d of %d bytes",
+				$bytesWritten, $bytesRead
+				));
+		}
+
+		return $bytesRead;
 	}
 
 	/**
@@ -169,6 +181,7 @@ class Facade_Stream
 		// try the filesize, works for urls and files
 		if(isset($metadata['uri']))
 		{
+			clearstatcache();
 			return filesize($metadata['uri']) - $position;
 		}
 		// fall back to seeking, this is slow on large files
