@@ -113,8 +113,6 @@ class Facade_S3_Request implements Facade_Request
 			// check we wrote enough data
 			if($bytes < $headers->value('Content-Length'))
 			{
-				Spf::dump(array($bytes, $headers->value('Content-Length')));
-
 				throw new Facade_Exception(
 					"Content stream was shorter than the Content-Length"
 					);

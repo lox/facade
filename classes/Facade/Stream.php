@@ -119,7 +119,7 @@ class Facade_Stream
 		{
 			$buffer = fread($stream, 1024);
 			$bytesRead += strlen($buffer);
-			$bytesWritten += fwrite($this->_stream, $buffer);
+			$bytesWritten += $this->_fwrite($this->_stream, $buffer);
 		}
 
 		if($bytesRead <> $bytesWritten)
@@ -131,6 +131,31 @@ class Facade_Stream
 		}
 
 		return $bytesRead;
+	}
+
+	/**
+	 * Wrapper around fwrite that attempts a number of times on zero bytes written
+	 * and then throws an exception
+	 * @return int the number of bytes written
+	 */
+	private function _fwrite($fp, $string, $retry=5)
+	{
+		$written = 0;
+
+		for($i=$retry; $i>0; $i--)
+		{
+			$bytes = @fwrite($fp, substr($string, $written));
+			$written += $bytes;
+
+			// note that fwrite doesn't return false as per documentation
+			// http://www.php.net/manual/en/function.fwrite.php#96951
+			if($written == strlen($string))
+			{
+				return strlen($string);
+			}
+		}
+
+		throw new Facade_Exception("Failed to write to stream");
 	}
 
 	/**
