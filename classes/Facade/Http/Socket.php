@@ -19,7 +19,7 @@ class Facade_Http_Socket extends Facade_Stream
 		$this->_port = $port;
 
 		// open the tcp socket
-		if(!$socket = fsockopen($this->_host, $this->_port, $errno, $errstr, $timeout))
+		if(!$socket = @fsockopen($this->_host, $this->_port, $errno, $errstr, $timeout))
 		{
 			throw new Exception("Failed to connect to $this->_host: $errstr");
 		}
@@ -49,6 +49,11 @@ class Facade_Http_Socket extends Facade_Stream
 	 */
 	public function readStatus()
 	{
+		if($this->isEof())
+		{
+			throw new Exception("Server unexpectedly closed connection");
+		}
+
 		$line = trim($this->readLine());
 
 		if(!preg_match('#^HTTP/1.\d (\d+) (.+?)$#',$line,$m))
