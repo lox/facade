@@ -46,3 +46,7 @@ if(strlen($response->getStream()->toString()) != filesize($file))
 {
 	die("response size doesn't match sent size");
 }
+else
+{
+	printf("wrote %d bytes\n",filesize($file));
+}
