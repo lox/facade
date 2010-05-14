@@ -17,7 +17,7 @@ if(in_array('-h', $argv) || in_array('--help', $argv) || count($argv) <> 3)
 }
 
 // s3 auth details are in the shell env
-if(!isset($_ENV['AWS_ACCESS_KEY_ID']) || !isset($_ENV['AWS_SECRET_ACCESS_KEY']))
+if(!getenv('AWS_ACCESS_KEY_ID') || !getenv('AWS_SECRET_ACCESS_KEY'))
 {
 	die("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in shell environment");
 }
@@ -27,8 +27,8 @@ $bucket = $argv[1];
 $objectName = basename($file);
 
 $s3 = new Facade_S3(
-	$_ENV['AWS_ACCESS_KEY_ID'],
-	$_ENV['AWS_SECRET_ACCESS_KEY']
+	getenv('AWS_ACCESS_KEY_ID'),
+	getenv('AWS_SECRET_ACCESS_KEY')
 	);
 
 $response = $s3

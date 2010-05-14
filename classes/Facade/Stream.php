@@ -134,28 +134,33 @@ class Facade_Stream
 	}
 
 	/**
-	 * Wrapper around fwrite that attempts a number of times on zero bytes written
-	 * and then throws an exception
+	 * Wrapper around fwrite that throws an exception
 	 * @return int the number of bytes written
 	 */
-	private function _fwrite($fp, $string, $retry=5)
+	private function _fwrite($fp, $string)
 	{
-		$written = 0;
+		$bytes = fwrite($fp, $string);
 
-		for($i=$retry; $i>0; $i--)
+		// this happens with invalid function params
+		if($bytes === false)
 		{
-			$bytes = @fwrite($fp, substr($string, $written));
-			$written += $bytes;
-
-			// note that fwrite doesn't return false as per documentation
-			// http://www.php.net/manual/en/function.fwrite.php#96951
-			if($written == strlen($string))
-			{
-				return strlen($string);
-			}
+			throw new Facade_Exception(
+				"Failed to write to stream, fwrite returned false"
+				);
 		}
 
-		throw new Facade_Exception("Failed to write to stream");
+		// note that fwrite doesn't return false as per documentation
+		// http://www.php.net/manual/en/function.fwrite.php#96951
+		if($bytes !== strlen($string))
+		{
+			throw new Facade_Exception(sprintf(
+				"Failed to write to stream, fwrite wrote %d of %d bytes",
+				$bytes,
+				strlen($string)
+				));
+		}
+
+		return $bytes;
 	}
 
 	/**
