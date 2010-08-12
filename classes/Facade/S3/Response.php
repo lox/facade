@@ -29,7 +29,7 @@ class Facade_S3_Response implements Facade_Response
 		{
 			$response = $this->getContentXml();
 
-			throw new Facade_S3_Exception(
+			throw new Facade_ResponseException(
 				sprintf(
 					"S3 request for %s failed: %s [error code %d]",
 					$path,
@@ -93,7 +93,7 @@ class Facade_S3_Response implements Facade_Response
 	{
 		if($this->getHeaders()->value('Content-Type') != 'application/xml')
 		{
-			throw new Contests_Aws_S3Exception("Response is not xml");
+			throw new Facade_StreamException("Response is not xml");
 		}
 
 		return new SimpleXMLElement($this->getStream()->toString());

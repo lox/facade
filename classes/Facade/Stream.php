@@ -60,6 +60,15 @@ class Facade_Stream
 	}
 
 	/**
+	 * Seeks to a particular point in the stream
+	 */
+	public function seek($offset)
+	{
+		if(fseek($this->_stream, $offset) !== 0)
+			throw new Facade_StreamException("Seek failed");
+	}
+
+	/**
 	 * Determines if the stream is at it's end
 	 * @return bool
 	 */
@@ -237,7 +246,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen($file, $writable ? 'r+' : 'r'))
 		{
-			throw new Facade_StreamException("Failed to open file");
+			throw new Facade_Exception("Failed to open file");
 		}
 
 		return new Facade_Stream($fp, filesize($file));
@@ -252,7 +261,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen('php://temp/maxmemory:'.$buffer, 'w+'))
 		{
-			throw new Facade_StreamException("Failed to create temp file");
+			throw new Facade_Exception("Failed to create temp file");
 		}
 
 		// write to the buffer

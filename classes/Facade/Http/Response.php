@@ -28,7 +28,7 @@ class Facade_Http_Response implements Facade_Response
 		// throw an exception if the request failed
 		if($exception && !$this->isSuccessful() && !$this->_socket->isEof())
 		{
-			throw new Facade_Exception(
+			throw new Facade_ResponseException(
 				"Request failed: ".$this->getStatusMessage(),
 				$this->getStatusCode()
 				);
