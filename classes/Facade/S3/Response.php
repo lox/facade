@@ -29,8 +29,13 @@ class Facade_S3_Response implements Facade_Response
 		{
 			$response = $this->getContentXml();
 
-			throw new Facade_Exception(
-				"S3 request for $path failed: {$response->Message}",
+			throw new Facade_S3_Exception(
+				sprintf(
+					"S3 request for %s failed: %s [error code %d]",
+					$path,
+					$response->Message,
+					$this->getStatusCode()
+					),
 				$this->getStatusCode()
 				);
 		}

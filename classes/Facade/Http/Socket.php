@@ -21,7 +21,8 @@ class Facade_Http_Socket extends Facade_Stream
 		// open the tcp socket
 		if(!$socket = @fsockopen($this->_host, $this->_port, $errno, $errstr, $timeout))
 		{
-			throw new Exception("Failed to connect to $this->_host: $errstr");
+			throw new Facade_StreamException(
+				"Failed to connect to $this->_host: $errstr", $errno);
 		}
 
 		// delegate to stream constructor
@@ -40,6 +41,13 @@ class Facade_Http_Socket extends Facade_Stream
 			$line .= $this->read(1);
 		}
 
+		// check for errors
+		if($errorcode = socket_last_error())
+		{
+			throw new Facade_StreamException("Socket error: $errormsg",
+				socket_strerror($errorcode));
+		}
+
 		$this->_debug("<<< ", $line);
 		return $line;
 	}
@@ -51,14 +59,14 @@ class Facade_Http_Socket extends Facade_Stream
 	{
 		if($this->isEof())
 		{
-			throw new Exception("Server unexpectedly closed connection");
+			throw new Facade_StreamException("Server unexpectedly closed connection");
 		}
 
 		$line = trim($this->readLine());
 
 		if(!preg_match('#^HTTP/1.\d (\d+) (.+?)$#',$line,$m))
 		{
-			throw new Exception("Malformed HTTP response from S3: $line");
+			throw new Facade_StreamException("Malformed HTTP response from S3: $line");
 		}
 
 		return array($m[1], $m[2]);
@@ -75,9 +83,9 @@ class Facade_Http_Socket extends Facade_Stream
 		// read until headers are over
 		while(($line = $this->readLine()) !== "\r\n")
 		{
-			if(!preg_match("#^(.+?):(.*)$#",$line))
+			if(!preg_match('#^(.+?):(.*)$#',$line))
 			{
-				throw new Exception("Malformed HTTP header: ".trim($line));
+				throw new Facade_StreamException("Malformed HTTP header: ".trim($line));
 			}
 
 			$headers->add($line);
@@ -117,9 +125,7 @@ class Facade_Http_Socket extends Facade_Stream
 	private function _debug($prefix, $line)
 	{
 		if($this->_debug)
-		{
-			file_put_contents('/tmp/socket.log',sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
-			//printf("%s %s\n", $prefix, rtrim($line,"\r\n"));
-		}
+			file_put_contents('/tmp/socket.log',
+				sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
 	}
 }

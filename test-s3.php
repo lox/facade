@@ -8,7 +8,7 @@ $classLoader = new Facade_ClassLoader();
 $classLoader->includePaths(array(BASEDIR.'/classes'))->register();
 
 // show help
-if(in_array('-h', $argv) || in_array('--help', $argv) || count($argv) <> 3)
+if(in_array('-h', $argv) || in_array('--help', $argv) || count($argv) < 3)
 {
 	echo "uploads a file to S3, then downloads it again.\n";
 	echo "\nusage: $argv[0] (bucket) (filename)\n\n";
@@ -25,11 +25,14 @@ if(!getenv('AWS_ACCESS_KEY_ID') || !getenv('AWS_SECRET_ACCESS_KEY'))
 $file = $argv[2];
 $bucket = $argv[1];
 $objectName = basename($file);
+$timer = microtime(true);
 
 $s3 = new Facade_S3(
 	getenv('AWS_ACCESS_KEY_ID'),
 	getenv('AWS_SECRET_ACCESS_KEY')
 	);
+
+printf("writing %s to %s\n", $file, $bucket);
 
 $response = $s3
 	->put(sprintf("/%s/%s",$bucket,$objectName))
@@ -48,5 +51,22 @@ if(strlen($response->getStream()->toString()) != filesize($file))
 }
 else
 {
-	printf("wrote %d bytes\n",filesize($file));
+	printf("wrote %d bytes in %.2fs\n",
+		filesize($file),microtime(true) - $timer);
 }
+
+if(in_array('--loop', $argv))
+{
+	while(true)
+	{
+		$timer = microtime(true);
+		$response = $s3
+			->get(sprintf("/%s/%s",$bucket,$objectName))
+			->send();
+
+		$content = $response->getStream()->toString();
+		printf("read %d bytes of %s in %.2fs\n",
+			strlen($content), $file, microtime(true) - $timer);
+	}
+}
+
