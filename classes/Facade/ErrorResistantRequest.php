@@ -80,6 +80,8 @@ class Facade_ErrorResistantRequest implements Facade_Request
 				// always retry stream exceptions
 			}
 
+			//file_put_contents('/tmp/socket.log',$e->__toString(),FILE_APPEND);
+
 			// exponential sleep
 			usleep(min(((pow(4, $i) * 10000)) + 1000000, 2000000));
 

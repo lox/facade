@@ -125,26 +125,6 @@ class Facade_Http_Socket
 	}
 
 	/**
-	 * Copies from another stream to this stream
-	 * @param mixed either a php stream or another Facade_Stream
-	 * @return the number of bytes copied
-	 */
-	public function copy($stream)
-	{
-		return $this->stream()->copy($stream);
-	}
-
-	/**
-	 * Sets whether the stream can be written to
-	 * @chainable
-	 */
-	public function setWritable($writable)
-	{
-		$this->_stream->setWritable($writable);
-		return $this;
-	}
-
-	/**
 	 * Writes an HTTP 1.0 request preamble to the socket
 	 * @param string the HTTP method
 	 * @param string the path to the object
@@ -164,11 +144,15 @@ class Facade_Http_Socket
 	}
 
 	/**
-	 * Gets the remaining contents of the stream as a string
+	 * Generic decorator, send all calls to internal stream
 	 */
-	public function toString()
+	public function __call($method, $params)
 	{
-		return $this->stream()->toString();
+		$stream = $this->stream();
+		$return = call_user_func_array(array($stream, $method), $params);
+
+		// chainable methods need some intervention
+		return $return === $stream ? $this : $return;
 	}
 
 	private function _debug($prefix, $line)
@@ -176,7 +160,7 @@ class Facade_Http_Socket
 		if($this->_debug)
 		{
 			file_put_contents('/tmp/socket.log',sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
-			printf("%s %s\n", $prefix, trim($line));
+			//printf("%s %s\n", $prefix, trim($line));
 		}
 	}
 }
