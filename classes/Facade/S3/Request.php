@@ -83,20 +83,20 @@ class Facade_S3_Request implements Facade_Request
 	{
 		$headers = $this->getHeaders();
 
-		// set some defaults
-		if(!$headers->contains('Date')) $this->setDate(time());
+		// clobber the date
+		$this->setDate(time());
+
+		// set default headers
 		if(!$headers->contains('Host')) $this->setHeader('Host: '.Facade_S3::S3_HOST);
-		if(!$headers->contains('x-amz-acl')) $this->setHeader('x-amz-acl: private');
+		if(!$headers->contains('x-amz-acl')) $this->setAcl('private');
 
 		// if there is a stream, add a content length
-		if(isset($this->_stream) && $this->_stream->getLength())
-		{
+		if(!is_null($this->_stream) && $this->_stream->getLength())
 			$this->setHeader('Content-Length: '.$this->_stream->getLength());
-		}
 
 		// add the amazon signature
-		$headers->set(sprintf('Authorization: AWS %s:%s',
-			$this->_accesskey, $this->signature()));
+		$this->setHeader(sprintf(
+			'Authorization: AWS %s:%s', $this->_accesskey, $this->signature()));
 
 		// write the pre-amble
 		$this->_socket->writeRequest(
@@ -113,7 +113,7 @@ class Facade_S3_Request implements Facade_Request
 			// check we wrote enough data
 			if($bytes < $headers->value('Content-Length'))
 			{
-				throw new Facade_Exception(
+				throw new Facade_StreamException(
 					"Content stream was shorter than the Content-Length"
 					);
 			}
