@@ -76,6 +76,15 @@ class Facade_S3_Request implements Facade_Request
 		return $this->_headers;
 	}
 
+	/* (non-phpdoc)
+	 * @see Facade_Request::reset()
+	 */
+	public function reset()
+	{
+		$this->_socket->connect();
+		return $this;
+	}
+
 	/**
 	 * Sends the request
 	 */

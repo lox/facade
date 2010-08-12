@@ -71,6 +71,15 @@ class Facade_Http_Request implements Facade_Request
 	}
 
 	/* (non-phpdoc)
+	 * @see Facade_Request::reset()
+	 */
+	public function reset()
+	{
+		$this->_socket->connect();
+		return $this;
+	}
+
+	/* (non-phpdoc)
 	 * @see Facade_Request::send()
 	 */
 	public function send()

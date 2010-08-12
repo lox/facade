@@ -34,7 +34,16 @@ class Facade_Stream
 	 */
 	public function read($bytes=1024)
 	{
-		return fread($this->_stream, $bytes);
+		$r = fread($this->_stream, $bytes);
+
+		// check for errors
+		if($errorcode = socket_last_error())
+		{
+			throw new Facade_StreamException("Socket error: $errormsg",
+				socket_strerror($errorcode));
+		}
+
+		return $r;
 	}
 
 	/**

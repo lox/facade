@@ -6,7 +6,7 @@
 interface Facade_Request
 {
 	/**
-	* Sets the content to send as an {@link Facade_Stream}
+	 * Sets the content to send as an {@link Facade_Stream}
 	 * @chainable
 	 */
 	public function setStream($stream);
@@ -29,4 +29,10 @@ interface Facade_Request
 	 * @return Facade_Response
 	 */
 	public function send();
+
+	/**
+	 * Resets any internal connections
+	 * @chainable
+	 */
+	public function reset();
 }

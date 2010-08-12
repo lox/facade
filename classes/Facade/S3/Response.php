@@ -18,11 +18,9 @@ class Facade_S3_Response implements Facade_Response
 		$this->_status = $this->_socket->readStatus();
 		$this->_headers = $this->_socket->readHeaders();
 
-		// set the socket length from the Content-Length header
+		// set the socket stream length from the Content-Length header
 		if($this->_headers->contains('Content-Length'))
-		{
-			$this->_socket->setLength($this->_headers->value('Content-Length'));
-		}
+			$this->_socket->stream()->setLength($this->_headers->value('Content-Length'));
 
 		// throw an exception if the request failed
 		if(!$this->isSuccessful() && !$this->_socket->isEof())

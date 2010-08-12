@@ -4,10 +4,13 @@
  * An wrapper around a socket with http related methods
  * @author Lachlan Donald <lachlan@ljd.cc>
  */
-class Facade_Http_Socket extends Facade_Stream
+class Facade_Http_Socket
 {
 	private $_host;
 	private $_port;
+	private $_timeout;
+	private $_stream;
+	private $_connected=false;
 	private $_debug=false;
 
 	/**
@@ -17,16 +20,40 @@ class Facade_Http_Socket extends Facade_Stream
 	{
 		$this->_host = $host;
 		$this->_port = $port;
+		$this->_timeout = $timeout;
+	}
+
+	/**
+	 * Connects to the remote host and creates the internal stream
+	 * @chainable
+	 */
+	public function connect()
+	{
+		$this->_debug("### ",
+			"connecting to {$this->_host}:{$this->_port}, timeout {$this->_timeout}");
 
 		// open the tcp socket
-		if(!$socket = @fsockopen($this->_host, $this->_port, $errno, $errstr, $timeout))
+		if(!$socket = @fsockopen($this->_host, $this->_port, $errno, $errstr, $this->_timeout))
 		{
 			throw new Facade_StreamException(
 				"Failed to connect to $this->_host: $errstr", $errno);
 		}
 
-		// delegate to stream constructor
-		parent::__construct($socket,null,true);
+		$this->_connected = true;
+		$this->_stream = new Facade_Stream($socket, null, true);
+		return $this;
+	}
+
+	/**
+	 * Returns the internal stream, connects if required
+	 * @return Facade_Http_Stream
+	 */
+	public function stream()
+	{
+		if(!$this->_connected)
+			$this->connect();
+
+		return $this->_stream;
 	}
 
 	/**
@@ -36,16 +63,9 @@ class Facade_Http_Socket extends Facade_Stream
 	public function readLine()
 	{
 		$line = '';
-		while(!$this->isEof() && substr($line,-2) != "\r\n")
+		while(!$this->stream()->isEof() && substr($line,-2) != "\r\n")
 		{
-			$line .= $this->read(1);
-		}
-
-		// check for errors
-		if($errorcode = socket_last_error())
-		{
-			throw new Facade_StreamException("Socket error: $errormsg",
-				socket_strerror($errorcode));
+			$line .= $this->stream()->read(1);
 		}
 
 		$this->_debug("<<< ", $line);
@@ -57,7 +77,7 @@ class Facade_Http_Socket extends Facade_Stream
 	 */
 	public function readStatus()
 	{
-		if($this->isEof())
+		if($this->stream()->isEof())
 		{
 			throw new Facade_StreamException("Server unexpectedly closed connection");
 		}
@@ -94,13 +114,34 @@ class Facade_Http_Socket extends Facade_Stream
 		return $headers;
 	}
 
-	/* (non-phpdoc)
-	 * @see Facade_Stream
+	/**
+	 * Writes to the sockets
+	 * @return int how many bytes are written
 	 */
 	public function write($line)
 	{
 		$this->_debug(">>> ", $line);
-		return parent::write($line);
+		return $this->stream()->write($line);
+	}
+
+	/**
+	 * Copies from another stream to this stream
+	 * @param mixed either a php stream or another Facade_Stream
+	 * @return the number of bytes copied
+	 */
+	public function copy($stream)
+	{
+		return $this->stream()->copy($stream);
+	}
+
+	/**
+	 * Sets whether the stream can be written to
+	 * @chainable
+	 */
+	public function setWritable($writable)
+	{
+		$this->_stream->setWritable($writable);
+		return $this;
 	}
 
 	/**
@@ -122,10 +163,20 @@ class Facade_Http_Socket extends Facade_Stream
 		return $this;
 	}
 
+	/**
+	 * Gets the remaining contents of the stream as a string
+	 */
+	public function toString()
+	{
+		return $this->stream()->toString();
+	}
+
 	private function _debug($prefix, $line)
 	{
 		if($this->_debug)
-			file_put_contents('/tmp/socket.log',
-				sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
+		{
+			file_put_contents('/tmp/socket.log',sprintf("%s %s\n",$prefix,trim($line)),FILE_APPEND);
+			printf("%s %s\n", $prefix, trim($line));
+		}
 	}
 }
