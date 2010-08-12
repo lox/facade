@@ -16,7 +16,7 @@ class Facade_S3 implements Facade_Backend
 	 * @param string AWS Access Key ID
 	 * @param string AWS Secret Key
 	 */
-	public function __construct($key, $secret, $timeout=30)
+	public function __construct($key, $secret, $timeout=10)
 	{
 		$this->_key = $key;
 		$this->_secret = $secret;

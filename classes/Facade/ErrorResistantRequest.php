@@ -8,7 +8,7 @@ class Facade_ErrorResistantRequest implements Facade_Request
 	const ERROR_RETRIES=5;
 
 	private $_request;
-	private $_streamOffset;
+	private $_offset;
 	private $_stream;
 
 	/**
@@ -24,7 +24,7 @@ class Facade_ErrorResistantRequest implements Facade_Request
 	 */
 	public function setStream($stream)
 	{
-		$this->_streamOffset = $stream->getOffset();
+		$this->_offset = $stream->getOffset();
 		$this->_stream = $stream;
 
 		$this->_request->setStream($stream);
@@ -49,6 +49,18 @@ class Facade_ErrorResistantRequest implements Facade_Request
 	}
 
 	/* (non-phpdoc)
+	 * @see Facade_Request::reset()
+	 */
+	public function reset()
+	{
+		// reset the source stream offset if it's changed
+		if(isset($this->_stream) && $this->_stream->getOffset() != $this->_offset)
+			$this->_stream->seek($this->_offset);
+
+		return $this->_request->reset();
+	}
+
+	/* (non-phpdoc)
 	 * @see Facade_Request::send()
 	 */
 	public function send()
@@ -68,15 +80,17 @@ class Facade_ErrorResistantRequest implements Facade_Request
 				// always retry stream exceptions
 			}
 
-			// sleep in ever increasing amounts of microseconds, max 2s
+			// exponential sleep
 			usleep(min(((pow(4, $i) * 10000)) + 1000000, 2000000));
 
-			// reset the stream position if needed
-			if(isset($this->_stream)
-				&& $this->_stream->getOffset() != $this->_streamOffset)
+			// reset state on request
+			try
 			{
-				$this->_stream->seek($this->_streamOffset);
-				$this->_request->setStream($this->_stream);
+				$this->reset();
+			}
+			catch(Facade_StreamException $e)
+			{
+				// this happens on connect errors
 			}
 		}
 
