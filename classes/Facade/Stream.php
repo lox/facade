@@ -45,7 +45,7 @@ class Facade_Stream
 	{
 		if(!$this->_writable)
 		{
-			throw new Facade_Exception("Stream is not writable");
+			throw new Facade_StreamException("Stream is not writable");
 		}
 
 		return fwrite($this->_stream, $data);
@@ -104,7 +104,7 @@ class Facade_Stream
 	{
 		if(!$this->_writable)
 		{
-			throw new Facade_Exception("Stream is not writable");
+			throw new Facade_StreamException("Stream is not writable");
 		}
 
 		if($stream instanceof Facade_Stream)
@@ -124,7 +124,7 @@ class Facade_Stream
 
 		if($bytesRead <> $bytesWritten)
 		{
-			throw new Facade_Exception(sprintf(
+			throw new Facade_StreamException(sprintf(
 				"Stream copy failed, wrote %d of %d bytes",
 				$bytesWritten, $bytesRead
 				));
@@ -144,7 +144,7 @@ class Facade_Stream
 		// this happens with invalid function params
 		if($bytes === false)
 		{
-			throw new Facade_Exception(
+			throw new Facade_StreamException(
 				"Failed to write to stream, fwrite returned false"
 				);
 		}
@@ -153,7 +153,7 @@ class Facade_Stream
 		// http://www.php.net/manual/en/function.fwrite.php#96951
 		if($bytes !== strlen($string))
 		{
-			throw new Facade_Exception(sprintf(
+			throw new Facade_StreamException(sprintf(
 				"Failed to write to stream, fwrite wrote %d of %d bytes",
 				$bytes,
 				strlen($string)
@@ -181,7 +181,7 @@ class Facade_Stream
 	{
 		if($this->_writable)
 		{
-			throw new Facade_Exception("Stream is writable, a length cannot be set");
+			throw new Facade_StreamException("Stream is writable, a length cannot be set");
 		}
 
 		$this->_length = $length;
@@ -237,7 +237,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen($file, $writable ? 'r+' : 'r'))
 		{
-			throw new Facade_Exception("Failed to open file");
+			throw new Facade_StreamException("Failed to open file");
 		}
 
 		return new Facade_Stream($fp, filesize($file));
@@ -252,7 +252,7 @@ class Facade_Stream
 	{
 		if(!$fp = @fopen('php://temp/maxmemory:'.$buffer, 'w+'))
 		{
-			throw new Facade_Exception("Failed to create temp file");
+			throw new Facade_StreamException("Failed to create temp file");
 		}
 
 		// write to the buffer
