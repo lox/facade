@@ -18,13 +18,6 @@ class Facade_Http_Response implements Facade_Response
 		$this->_status = $this->_socket->readStatus();
 		$this->_headers = $this->_socket->readHeaders();
 
-		// hint the length of the response
-		if($this->_headers->contains('Content-Length'))
-		{
-			$this->_socket->setLength(
-				$this->_headers->value('Content-Length'));
-		}
-
 		// throw an exception if the request failed
 		if($exception && !$this->isSuccessful() && !$this->_socket->isEof())
 		{
@@ -100,6 +93,11 @@ class Facade_Http_Response implements Facade_Response
 		}
 
 		return $this->_socket->getStream();
+	}
+	
+	public function getStream()
+	{
+		return $this->getContentStream();
 	}
 
 	/**

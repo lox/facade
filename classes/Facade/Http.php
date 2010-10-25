@@ -63,14 +63,12 @@ class Facade_Http implements Facade_Backend
 	}
 
 	/**
-	 * Builds an S3 request
+	 * Builds an HTTP request
 	 */
 	private function buildRequest($method, $path)
 	{
 		return new Facade_Http_Request(
 			new Facade_Http_Socket($this->_host, $this->_port, $this->_timeout),
-			$this->_key,
-			$this->_secret,
 			$method,
 			$path
 			);
