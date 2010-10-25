@@ -259,7 +259,7 @@ class Facade_Stream
 			throw new Facade_Exception("Failed to open file");
 		}
 
-		return new Facade_Stream($fp, filesize($file));
+		return new Facade_Stream($fp, filesize($file), $writable);
 	}
 
 	/**

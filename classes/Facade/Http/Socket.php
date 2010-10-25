@@ -142,6 +142,16 @@ class Facade_Http_Socket
 		$this->write("\r\n");
 		return $this;
 	}
+	
+	public function getHost()
+	{
+		return $this->_host;
+	}
+	
+	public function getStream()
+	{
+		return $this->_stream;
+	}
 
 	/**
 	 * Generic decorator, send all calls to internal stream
