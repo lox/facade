@@ -110,7 +110,7 @@ class Facade_S3_Request implements Facade_Request
 		// write the pre-amble
 		$this->_socket->writeRequest(
 			$this->_method,
-			$this->_path,
+			urlencode($this->_path),
 			$this->getHeaders()
 			);
 
@@ -159,7 +159,7 @@ class Facade_S3_Request implements Facade_Request
 			$type,
 			$date,
 			$canonicalized,
-			$this->_path
+			urlencode($this->_path)
 			);
 
 		return $this->base64($this->hmacsha1(	$this->_secret, $plaintext));
