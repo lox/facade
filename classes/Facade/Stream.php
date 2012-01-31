@@ -39,6 +39,7 @@ class Facade_Stream
 		// check for errors
 		if($errorcode = socket_last_error())
 		{
+			$errormsg = socket_strerror($errorcode);
 			throw new Facade_StreamException("Socket error: $errormsg",
 				socket_strerror($errorcode));
 		}
