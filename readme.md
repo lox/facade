@@ -42,4 +42,4 @@ stream_copy_to_stream($response->getStream(), STDOUT);
 ```
 
   [1]: http://www.opensource.org/licenses/mit-license.php
-  [3]: http://aws.amazon.com/s3/
+  [2]: http://aws.amazon.com/s3/
